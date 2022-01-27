@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using win21.Pages
+@using Microsoft.AspNetCore.Identity
+@using win21.Shared
+
+@attribute [IgnoreAntiforgeryToken]
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+
+    Layout = "/Pages/_Layout.cshtml";
+
+}
+
+<div class="page">
+
+    <partial name="_NavMenu" />
+
+    <main class="account-manage-main">
+        <article class="content px-4">
+            <h2>Change your account settings</h2>
+            <hr />
+                <div class="row">
+                    <div class="col-md-3">
+                        <partial name="_ManageNav" />
+                    </div>
+                    <div class="col-md-9">
+                        @RenderBody()
+                    </div>
+                </div>
+        </article>
+    </main>
+</div>
+
+@RenderSection("scripts", required: false)

@@ -1,0 +1,402 @@
+﻿@page "/upload"
+@using System.IO.Compression
+@using ByteSizeLib
+@using win21.Data.UnzipServices
+@using win21.Data.UploadServices
+@using Microsoft.AspNetCore.Identity
+@inject NavigationManager NavigationManager;
+@inject IdentityUser _identityUser;
+@inject UploadService uploadService;
+@inject PostService _postService;
+@inject ILogger<Upload> Logger;
+@inject Extractor _extractor;
+@inject FileTransferService _fileTransfer;
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+
+<PageTitle>Upload</PageTitle>
+
+<header>
+    <h1 class="head-title">Upload a project</h1>
+    <hr/>
+</header>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="info-box">
+
+            <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </symbol>
+            </svg>
+
+            <div class="alert alert-secondary alert-dismissible d-flex align-items-start" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>
+                <div>
+                    <h4 class="alert-heading">How to upload?</h4> 
+                    <p>create a <i>.zip</i> archive containing the files in the root
+                        folder of your project. Select <i><strong>YourProject.zip</strong></i> below, give it a name and press <b>Upload</b>.</p>
+                    <hr/>
+                    <p style="font-size: 0.9rem"><i> Having troubles uploading? <b><NavLink class="alert-link" href="HowtoUpload">here is a guide</NavLink></b></i></p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @onclick="ToggleInfo"></button>
+                </div>
+            </div>
+        </div>
+        <div class="upload-form-container">
+            
+            @if (post == null)
+            {
+                <form @onsubmit="StartProcessing">
+                    <div class="mb-3">
+                        <label for="reponame" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="reponame" placeholder="The name of your upload" @bind="@repo" required>
+                    </div>
+                    <div class="input-group">
+                        @if (!bClearInputFile)
+                        {
+                            <InputFile OnChange="LoadFiles" class="form-control" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload" accept="application/x-zip-compressed"/>
+                        }
+                        <button class="btn btn-outline-primary @IsDisabled" type="submit" id="inputGroupFileAddon04">Upload</button>
+                    </div>
+                </form>
+            }
+
+            @if (IsUploading)
+            {
+                <p class="text-primary pt-3 text-center">Loading...</p>
+            }
+            @if (IsShowingProgress)
+            {
+                <p>@progressMessage @loadProgress%</p>
+
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: @loadProgress%" aria-valuenow="@loadProgress" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            }
+            @if (!IsUploading && !IsShowingProgress && post == null)
+            {
+                <div style="padding-top: 0.25rem; padding-bottom: 0.75rem;">
+                    <p class="text-dark  px-1 text-opacity-50"><i style="font-size: 0.8rem;">only ".zip" formats are supported at this time</i></p>
+                </div>
+            }
+
+
+            @if (post != null)
+            {
+                <h4 class="text-success pt-3 text-center">@state</h4>
+                <ul class="result-list">
+                    <li>Post: @post.PostName</li>
+                    <li>Size: @post.PostSize</li>
+                    <li>User: @user.UserName</li>
+                    <li>Posted: @post.UploadDate</li>
+                    <li>url:<a href="@post.PostUrl">@post.PostUrl</a></li>
+
+                </ul>
+                <div class="d-flex" style="padding-left: 1rem; padding-right: 0.25rem;">
+                    <a href="@post.PostUrl" class="btn btn-primary w-75" style="margin-right: 0.25rem;">Visit Website</a>
+                    <button class="btn btn-outline-dark w-50" type="button" style="margin-left: 0.25rem;" @onclick="ForceReload">New Upload</button>
+                </div>
+            }
+
+        </div>
+        @if (infoToggled)
+        {
+            <div class="info-box">
+                <div class="bd-callout bd-callout-secondary">
+                    <h4>How To Upload</h4>
+                    <p>create a <i>.zip</i> archive containing the files in the root
+                        folder of your project. Select <i><strong>YourProject.zip</strong></i> below, give it a name and press <b>Upload</b>.</p>
+                    <hr/>
+                    <p style="font-size: 0.9rem"><i> Having troubles uploading? <b><NavLink class="alert-link" href="HowtoUpload">here is a guide</NavLink></b></i></p>
+                </div>
+            </div>
+        }
+        <div class="info-box">
+            <div class="bd-callout bd-callout-info">
+                <h4>Uploading Files</h4>
+                The files will be uploaded to a web server where they will be available from the World Wide Web. When you upload files to the server you are responsible for the content not including anything illegal or inappropriate. <br/> Also keep in mind that personal/sensitive data like passwords, addresses, connection strings etc. could be visible in your code and thus also visible to visitors of the page. In order to store the necessary secrets safely on the server contact te administrator.
+            </div>
+        </div>
+
+    </Authorized>
+    <NotAuthorized>
+    <div class="info-box">
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </svg>
+            <div>
+                You have to be signed in to view this page
+            </div>
+        </div>
+    </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    private bool bClearInputFile;
+    private bool ShouldUpload;
+    private bool IsShowingProgress;
+    private bool IsUploading;
+    string state;
+    int loadProgress;
+    string progressMessage;
+    string IsDisabled;
+    bool IsLoading;
+    private string? userName;
+    private string? repo;
+    private string? ID;
+    private string? errorMessage;
+    private Post post;
+    private IdentityUser user;
+
+    string? zipPath;
+    string _deletePath;
+    IBrowserFile _file;
+
+    private bool infoToggled;
+
+    private void ForceReload()
+    {
+        NavigationManager.NavigateTo("Upload", true);
+    }
+
+    private void ClearInputFile()
+    {
+        bClearInputFile = true;
+        StateHasChanged();
+        bClearInputFile = false;
+        StateHasChanged();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            Logger.LogInformation("[{timestamp}] | First Render!",DateTime.Now.ToString("HH:mm:ss"));
+        }
+        else
+        {
+
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Logger.LogInformation("[{timestamp}] | First Render!",DateTime.Now.ToString("HH:mm:ss"));
+        }
+        else
+        {
+            if (ShouldUpload)
+            {
+                ShouldUpload = false;
+                await UploadTask().Result;
+                await saveToDbTask().Result;
+                IsLoading = false;
+                await Task.Delay(500);
+                IsShowingProgress = false;
+                state = "Upload Successful!";
+                ClearInputFile();
+                repo = "";
+            }
+        }
+    }
+
+    private async Task<Task> UploadTask()
+    {
+
+        var loadingExtractor = new Task(() =>
+        {
+             _extractor.Extract(zipPath, _deletePath, ID, repo);
+        });
+
+        loadingExtractor.Start();
+
+        return loadingExtractor.WaitAsync(TimeSpan.FromSeconds(60));
+    }
+
+    private async Task<Task> saveToDbTask()
+    {
+        var result = ByteSize.FromBytes(_file.Size);
+
+        var size = ByteSize.FromKiloBytes(result.KiloBytes).ToString();
+
+        var postId = await _postService.GetPostId();
+
+        
+        var newPost = new Post
+        {
+            PostName = repo,
+            UploadDate = DateTime.Now,
+            PostUrl = $"https://pages.win21.pingu.onl/page/{postId}",
+            PostSize = size,
+            UserId = ID
+
+        };
+
+        var DbUploader = new Task(() =>
+        {
+            _postService.SavePostInfo(newPost);
+
+            user =  _postService.GetUser(ID).Result;
+            
+            post =  newPost;
+        });
+
+        DbUploader.Start();
+
+
+        return DbUploader.WaitAsync(TimeSpan.FromSeconds(60));
+
+    }
+
+    private async Task ToggleInfo()
+    {
+        infoToggled = true;
+    }
+
+
+    private async void StartProcessing()
+    {
+        if (zipPath != null && repo != null)
+        {
+            progressMessage = "Uploading to server: ";
+            IsDisabled = "disabled";
+            IsShowingProgress = true;
+            IsLoading = true;
+            
+
+            var progress = new Progress<int>(percent =>
+            {
+                loadProgress = percent;
+                StateHasChanged();
+
+            });
+
+            await DoProcessing(progress);
+            StateHasChanged();
+        }
+        else
+        {
+            progressMessage = "something went wrong... try again";
+        }
+
+    }
+
+    private async Task DoProcessing(IProgress<int> progress)
+    {
+
+        if (IsLoading)
+        {
+            int i = 0;
+            ShouldUpload = true;
+            while (IsLoading)
+            {
+                i++;
+                await Task.Delay(100);
+                if (progress != null)
+                {
+                    progress.Report(i);
+                }
+                if (i > 33)
+                {
+                    await Task.Delay(100);
+                }
+                    if (i > 66)
+                    {
+                        await Task.Delay(100);
+                    }
+                        if (i > 80)
+                        {
+                            await Task.Delay(100);
+                        }
+                            if (i > 90)
+                            {
+                                await Task.Delay(10000);
+                            }
+            }
+            i = 100;
+
+            if (progress != null)
+                progress.Report(i);
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetClaimsPrincipalData();
+    }
+
+    private async Task<string> GetUserID(string username)
+    {
+        try
+        {
+            Logger.LogInformation("Requesting ID for: {username}", username);
+            var _id = await uploadService.GetUserIDasync(username);
+            return _id;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Request failed - Ex: {err}", e.Message);
+            errorMessage = e.Message;
+            return e.Message;
+        }
+        
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        IsUploading = true;
+        IsDisabled = "disabled";
+        StateHasChanged();
+        var userID = await GetUserID(userName);
+
+        if (userID != errorMessage)
+        {
+            ID = userID;
+            foreach (var file in e.GetMultipleFiles())
+            {
+                _file = file;
+            }
+            var path = Path.Combine($"wwwroot/data/{userID}/");
+            _deletePath = path;
+
+            zipPath = Path.Combine(path, _file.Name);
+
+            if (!Directory.Exists(Path.GetDirectoryName(zipPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+            }
+
+            await using FileStream fs = new(zipPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+            await _file.OpenReadStream().CopyToAsync(fs);
+            await fs.DisposeAsync();
+            await Task.Delay(500);
+            IsUploading = false;
+            IsDisabled = "";
+            StateHasChanged();
+        }
+        else
+        {
+            state = errorMessage;
+            IsUploading = false;
+            IsDisabled = "";
+            StateHasChanged();
+        }
+    }
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userName = user.Identity.Name;
+        }
+    }
+}

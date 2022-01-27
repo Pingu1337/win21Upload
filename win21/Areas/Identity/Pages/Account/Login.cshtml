@@ -1,0 +1,70 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+<link rel="stylesheet" href="/css/bootstrap/bootstrap.css" />
+<link href="/css/login.css" rel="stylesheet" />
+
+<partial name="Manage/_NavMenu" />
+<div class="page">
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <h1>@ViewData["Title"]</h1>
+            <hr/>
+            <section class="account-manage-main">
+                <form id="account" method="post">
+                    <h2>Log in with your win21 account.</h2>
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        @*                    <label asp-for="Input.Email" class="form-label">Email address</label>*@
+                        <input asp-for="Input.Email" type="email" class="form-control" id="inputEmail" placeholder="Email address">
+                    </div>
+
+                    <div class="mb-3">
+                        @*                    <label asp-for="Input.Password" class="form-label">Password</label>*@
+                        <input asp-for="Input.Password" type="password" class="form-control" id="inputPasswprd" placeholder="password">
+                    </div>
+                    <div>
+                        <div class="checkbox">
+                            <label asp-for="Input.RememberMe" class="form-label">
+                                <input class="form-check-input" asp-for="Input.RememberMe"/>
+                                @Html.DisplayNameFor(m => m.Input.RememberMe)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="btn-box">
+                        <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    </div>
+                    <div class="form-links">
+                        <hr/>
+                        @*                        <p>
+                            <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+                        </p>*@
+                        <p>
+                            Don't have an account? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register</a>
+                        </p>
+                        @*                        <p>
+                            <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
+                        </p>*@
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+<div class="login-footer shadow-longer-negative-y">
+    <div class="login-footer-content ">
+        
+        © 2022 - Win21 <span class="footer-text-small">Developed and hosted by <a href="https://pingu.onl/" target="_blank">pingu.onl</a></span>
+
+    </div>
+</div>
+
+@section scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

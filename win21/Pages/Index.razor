@@ -1,0 +1,139 @@
+﻿@page "/"
+@using System.IO.Compression
+@using win21.Data.UnzipServices
+@using win21.Data.UploadServices
+@using Microsoft.AspNetCore.Identity
+@using NuGet.Protocol.Plugins
+@inject ILogger<Index> _logger;
+@inject Extractor _extractor;
+@inject FileTransferService _fileTransfer;
+@inject PostService _postService;
+@inject UploadService uploadService;
+@inject IdentityUser _identityUser;
+@inject AuthenticationStateProvider AuthenticationStateProvider;
+<PageTitle>Index</PageTitle>
+
+
+
+<div class="p-5 mb-4 bg-white rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Win21 Online Showcase</h1>
+            <p class="col-md-8 fs-4">Welcome to the win21 online showcase upload site! This website is for uploading static website projects to a web server. Get started with creating an account and upload a static website, or browse the collection.</p>
+            <a href="https://pages.win21.pingu.onl/"><button class="btn btn-primary btn-lg" type="button">Browse the collection</button></a>
+        </div>
+    </div>
+
+    <div class="row align-items-md-stretch">
+        <div class="col-md-6">
+            <div class="h-100 p-5 text-white bg-dark rounded-3">
+                <h2>Upload</h2>
+                <p>You can upload any project, just make sure it is zipped correctly otherwise the routing to the website will not work correctly, see <a href="HowToUpload">this guide</a> to learn more.</p>
+                <a href="Upload"><button class="btn btn-outline-light" type="button">Upload</button></a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="h-100 p-5 bg-white border rounded-3">
+                <h2>Register</h2>
+                <p>To register an account you need to enter the win21-account token, it should be somewhere in the discord channel.
+                    All passwords are encrypted with the <a href="https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity?view=aspnetcore-6.0&tabs=visual-studio" target="_blank">ASP.NET Identity</a> encryption and not stored directly on the database.<br/>
+                </p>
+                <a href="Identity/Account/Register"><button class="btn btn-outline-secondary" type="button">Register</button></a>
+            </div>
+        </div>
+    </div>
+
+
+@if (IsLoading)
+{ 
+
+}
+
+
+@if (postList != null)
+    {
+        <ul>
+            @foreach (var post in postList)
+            {
+                <ul>
+                    <li>Post Name: @post.PostName</li>
+                    <li>Posted: @post.UploadDate</li>
+                    <li>Size: @post.PostSize</li>
+                    <li>url: <a href="@post.PostUrl">@post.PostUrl</a></li>
+                    <li>User: @post.UserId</li>
+                </ul>
+            }
+        </ul>
+    }
+
+
+@code
+{
+    private List<Post> postList;
+    private IdentityUser user;
+    private string userName;
+    bool IsLoading;
+    int loadProgress;
+    string progressMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetClaimsPrincipalData();
+    }
+
+    private async Task<string> GetUserID(string username)
+    {
+        try
+        {
+           
+            var _id = await uploadService.GetUserIDasync(username);
+            return _id;
+        }
+        catch (Exception e)
+        {
+
+            return e.Message;
+        }
+        
+    }
+
+
+
+    private async Task CreatePost()
+    {
+        var id = await GetUserID(userName);
+        var newPost = new Post
+        {
+            PostName = "TestPost",
+            UploadDate = DateTime.Now,
+            PostUrl = "https://pages.win21.pingu.onl/",
+            PostSize = "20kb",
+            UserId = id
+
+        };
+       await _postService.SavePostInfo(newPost);
+    }
+
+    private async Task GetPost()
+    {
+        IsLoading = true;
+        var id = await GetUserID(userName);
+
+        var receivedPosts = await _postService.GetPostInfo(id);
+        user = await _postService.GetUser(id);
+        postList = receivedPosts;
+        IsLoading = false;
+    }
+
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userName = user.Identity.Name;
+        }
+    }
+
+}

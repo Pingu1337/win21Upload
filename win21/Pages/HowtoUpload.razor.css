@@ -1,0 +1,121 @@
+﻿header {
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+header hr {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+header h1 {
+    font-size: 2.5rem;
+}
+
+.head-title {
+    text-align: center;
+}
+
+.info-box {
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.card, .card-header, .card-header-tabs, .tab-content{
+    min-width: 600px;
+
+}
+
+    .card {
+        overflow: hidden;
+        height: fit-content;
+    }
+
+    .card-img-bottom {
+        min-height: 100%;
+        width: auto;
+    }
+
+    .frame {
+        border-top: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+.font-11 {
+    font-size: 1.1rem !important;
+}
+.figure {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+figure img {
+    user-select: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.f1{
+    margin-right: 2rem;
+}
+.f2 {
+    margin-left: 2rem;
+}
+.card {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+/*@media screen and (max-width: 1800px) {
+    .card {
+        margin-right: 250px !important;
+        margin-left: -250px !important;
+    }
+}
+@media screen and (max-width: 1700px) {
+    .card {
+        margin-right: 150px !important;
+        margin-left: -150px !important;
+    }
+}
+@media screen and (max-width: 1600px) {
+    .card {
+        margin-right: auto !important;
+        margin-left: 0 !important;
+    }
+}*/
+@media screen and (max-width: 1239px) {
+    .card, .card-header, .card-header-tabs, .tab-content {
+        min-width: auto;
+    }
+}
+
+@media screen and (max-width: 990px) {
+    .card, .card-header, .card-header-tabs, .tab-content {
+        min-width: 100%;
+    }
+
+    .info-box {
+        min-width: 100%;
+    }
+
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+@media screen and (max-width:752px) {
+    .f1 {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .f2 {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

@@ -1,0 +1,76 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+<link rel="stylesheet" href="/css/bootstrap/bootstrap.css" />
+<link href="/css/login.css" rel="stylesheet" />
+
+<partial name="Manage/_NavMenu" />
+<div class="page">
+
+
+    <div class="row">
+        <div class="col-md-6 reg-form">
+            <h1>@ViewData["Title"]</h1>
+            <hr/>
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <h2>Create a new account.</h2>
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @*            <div class="form-floating">
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
+                    <label asp-for="Input.Email"></label>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>*@
+                <div class="mb-3">
+                    <span asp-validation-for="Input.Email" class="text-danger error-text"></span>
+                    <input asp-for="Input.Email" type="email" class="form-control" id="inputEmail" placeholder="Email address">
+                </div>                
+                <div class="mb-3">
+                    <span asp-validation-for="Input.UserName" class="text-danger error-text"></span>
+                    <input asp-for="Input.UserName" type="text" class="form-control" id="inputUserName" placeholder="Username">
+                </div>
+
+                <div class="mb-3">
+                    <span asp-validation-for="Input.Password" class="text-danger error-text"></span>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Password"/>
+                </div>
+                <div class="mb-3">
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger error-text"></span>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Confirm password"/>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Input.Token" class="form-label">Account Token</label>
+                    <input asp-for="Input.Token" class="form-control" aria-required="true" placeholder="Win21 account token" p/>
+                </div>
+                <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+                <div class="form-links">
+                    <hr/>
+
+                    <p style="text-align: center; padding-top: 1rem;">
+                        Already have an account? <a class="reg-form-link" asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Sign in</a>
+                    </p>
+
+                </div>
+            </form>
+            <div class="info-box">
+                <p><i>What is "Account Token" ?</i> <br/>
+                Since this website is restricted to members of Win21 new accounts are required to enter the official account token given only to members.</p>
+                <p><span style="font-size: 1.15em;"> Are you a member of Win21?</span> <br/>
+                    The account token can be acquired from the win21 discord server.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="login-footer shadow-longer-negative-y">
+    <div class="login-footer-content ">
+        
+        © 2022 - Win21 <span class="footer-text-small">Developed and hosted by <a href="https://pingu.onl/" target="_blank">pingu.onl</a></span>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

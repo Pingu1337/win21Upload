@@ -1,0 +1,92 @@
+﻿:root {
+    --bs-light: #ded8de;
+    --bs-dark: #03193a;
+    --bs-primary: #353a5e;
+    --bs-secondary: #1d74f4;
+    --bs-info: #f11177;
+    --bs-success: #089c5a;
+    --bs-warning: #dfc909;
+    --bs-danger: #ed1c03;
+}
+
+.bd-callout {
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #eee;
+    border-left-width: .25rem;
+    border-radius: .25rem;
+    background-color: #F6F6F6;
+}
+
+.bd-callout h4 {
+    margin-top: 0;
+    margin-bottom: .25rem
+}
+
+.bd-callout p:last-child {
+    margin-bottom: 0
+}
+
+.bd-callout code {
+    border-radius: .25rem
+}
+
+.bd-callout + .bd-callout {
+    margin-top: -.25rem
+}
+
+.bd-callout-info {
+    border-left-color: var(--bs-info)
+}
+
+    .bd-callout-info h4 {
+        color: var(--bs-info)
+    }
+
+.bd-callout-warning {
+    border-left-color: var(--bs-warning)
+}
+
+    .bd-callout-warning h4 {
+        color: var(--bs-warning)
+    }
+
+.bd-callout-danger {
+    border-left-color: var(--bs-danger)
+}
+
+    .bd-callout-danger h4 {
+        color: var(--bs-danger)
+    }
+
+.bd-callout-primary {
+    border-left-color: var(--bs-primary)
+}
+
+.bd-callout-primaryh4 {
+    color: var(--bs-primary)
+}
+.bd-callout-secondary {
+    border-left-color: var(--bs-secondary)
+}
+
+.bd-callout-secondary4 {
+    color: var(--bs-secondary)
+}
+
+.bd-callout-success {
+    border-left-color: var(--bs-success)
+}
+
+.bd-callout-successh4 {
+    color: var(--bs-success)
+}
+
+.bd-callout-default {
+    border-left-color: #6c757d
+}
+
+.bd-callout-defaulth4 {
+    color: #6c757d
+}
